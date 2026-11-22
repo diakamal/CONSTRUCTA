@@ -2,11 +2,20 @@
 import { useState } from 'react';
 import type { MProject } from '@constructa/shared';
 import { useDash } from '@/components/project-context';
+import { SiteMap } from '@/components/site-map';
 import { Badge, Button, Card, ErrorText, Field, Input } from '@/components/ui';
 import { errorMessage, rpc } from '@/lib/api';
 
 type Draft = { id?: string; name: string; address: string; lat: string; lng: string; radius_m: number };
 const fromProject = (p: MProject): Draft => ({ id: p.id, name: p.name, address: p.address ?? '', lat: String(p.lat), lng: String(p.lng), radius_m: p.radius_m });
+
+/** Valid coordinates typed in the draft, or null while empty/invalid. */
+function draftPoint(d: Draft) {
+  if (d.lat.trim() === '' || d.lng.trim() === '') return null;
+  const lat = Number(d.lat), lng = Number(d.lng);
+  return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
+}
+const ISRAEL_CENTER = { lat: 32.08, lng: 34.78 }; // first view when there are no projects yet
 
 export default function ProjectsPage() {
   const { projects, reloadProjects, setProjectId } = useDash();
@@ -51,12 +60,19 @@ export default function ProjectsPage() {
               }}>📍 המיקום הנוכחי שלי</Button>
             </div>
           </div>
-          {draft.lat && draft.lng && !Number.isNaN(Number(draft.lat)) && (
-            <a className="mt-3 inline-block text-sm text-amber-700 hover:underline" target="_blank" rel="noreferrer"
-              href={`https://www.openstreetmap.org/?mlat=${draft.lat}&mlon=${draft.lng}#map=17/${draft.lat}/${draft.lng}`}>
-              בדיקת המיקום במפה ↗
-            </a>
-          )}
+          <div className="mt-4 space-y-2">
+            <p className="text-sm text-slate-600">
+              {draftPoint(draft)
+                ? 'העיגול הכתום הוא אזור הנוכחות. לחיצה על המפה מזיזה את מרכז האתר.'
+                : 'לחצו על המפה כדי לסמן את מרכז האתר.'}
+            </p>
+            <SiteMap
+              {...(draftPoint(draft) ?? (projects[0] ? { lat: projects[0].lat, lng: projects[0].lng } : ISRAEL_CENTER))}
+              radius={draft.radius_m}
+              showSite={draftPoint(draft) !== null}
+              onPick={(lat, lng) => setDraft((d) => d && { ...d, lat: lat.toFixed(6), lng: lng.toFixed(6) })}
+            />
+          </div>
           <div className="mt-4 space-y-3">
             <ErrorText>{error}</ErrorText>
             <div className="flex gap-2">
@@ -75,6 +91,9 @@ export default function ProjectsPage() {
               <dt className="text-slate-500">מרכז</dt><dd dir="ltr" className="text-end">{p.lat.toFixed(5)}, {p.lng.toFixed(5)}</dd>
               <dt className="text-slate-500">רדיוס</dt><dd>{p.radius_m} מ׳</dd>
             </dl>
+            <div className="mt-3">
+              <SiteMap lat={p.lat} lng={p.lng} radius={p.radius_m} height={180} readOnly />
+            </div>
             <div className="mt-4 flex gap-2">
               <Button variant="secondary" onClick={() => { setError(''); setDraft(fromProject(p)); }}>עריכה</Button>
               <Button variant="ghost" onClick={() => setProjectId(p.id)}>בחר כפרויקט פעיל</Button>
