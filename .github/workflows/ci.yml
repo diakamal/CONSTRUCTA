@@ -1,0 +1,47 @@
+name: CI
+
+# Runs on every push / pull request to the stable (main) and development (dev) branches,
+# so dev is known to be green before it is merged into main.
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Test, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Unit tests (business rules + translations)
+        run: npm test
+
+      - name: Typecheck (shared, web, mobile)
+        run: npm run typecheck
+
+      - name: Build manager dashboard
+        run: npm run build -w @constructa/web
+
+      - name: Bundle worker app (Android)
+        working-directory: apps/mobile
+        env:
+          CI: '1'
+        run: npx expo export --platform android --output-dir ${{ runner.temp }}/mobile-export
