@@ -43,6 +43,24 @@ export default function LoginPage() {
         <p className="rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
           מצב דמו: פרטי ההתחברות של המנהל לדוגמה נמצאים ב-README.
         </p>
+        <section aria-labelledby="contact-heading" className="border-t border-slate-200 pt-4 text-sm text-slate-600">
+          <h2 id="contact-heading" className="font-bold text-slate-900">צור קשר</h2>
+          <p className="mt-1">יש שאלה או צריך עזרה? נשמח לעזור.</p>
+          <ul className="mt-2 space-y-1">
+            <li>
+              אימייל:{' '}
+              <a href="mailto:contact@constructa.test" dir="ltr" className="font-medium text-slate-900 underline">
+                contact@constructa.test
+              </a>
+            </li>
+            <li>
+              טלפון:{' '}
+              <a href="tel:+97230000000" dir="ltr" className="font-medium text-slate-900 underline">
+                03-0000000
+              </a>
+            </li>
+          </ul>
+        </section>
       </form>
     </main>
   );
