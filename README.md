@@ -2,6 +2,8 @@
 
 Attendance, daily tasks and photo documentation for construction sites.
 
+CONSTRUCTA helps site managers see who is on site, what work was done each day, and photo proof of progress, all in one place.
+
 | Path | What |
 |---|---|
 | `apps/mobile` | Worker app: Expo / React Native (iOS, Android, web) |
